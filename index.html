@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URBAN STREETWEAR | Curated Streetwear Drops</title>
+    <meta name="description" content="Curated streetwear drops for the urban culture. Built for confidence.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👕</text></svg>">
+</head>
+<body class="bg-black text-white font-sans overflow-x-hidden">
+    <!-- Grain Overlay -->
+    <div class="grain-overlay"></div>
+    
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col relative z-10">
+        <!-- Header -->
+        <header class="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-gray-800">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <!-- Logo & Brand -->
+                    <div class="flex items-center space-x-3 mb-4 md:mb-0">
+                        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                            <span class="text-black font-black text-xl">U</span>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl md:text-3xl font-black tracking-tight uppercase">URBAN STREETWEAR</h1>
+                            <p class="text-gray-400 text-sm">Curated Streetwear Drops</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="hidden md:flex items-center space-x-6 text-sm">
+                        <div class="text-center">
+                            <p class="text-2xl font-black text-white">3,066</p>
+                            <p class="text-gray-400 text-xs uppercase">Items Curated</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-black text-white">150+</p>
+                            <p class="text-gray-400 text-xs uppercase">Brands</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-black text-white">24/7</p>
+                            <p class="text-gray-400 text-xs uppercase">Updated</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button id="mobileMenuBtn" class="md:hidden absolute right-4 top-4 text-white text-2xl">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <!-- Tagline -->
+                <div class="mt-4 text-center md:text-left">
+                    <p class="text-gray-300 italic">"Built for Confidence. Designed for the Streets."</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobileMenu" class="md:hidden bg-gray-900 border-b border-gray-800 p-4 hidden">
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="text-center">
+                    <p class="text-xl font-black text-white">3,066</p>
+                    <p class="text-gray-400 text-xs uppercase">Items</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xl font-black text-white">150+</p>
+                    <p class="text-gray-400 text-xs uppercase">Brands</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xl font-black text-white">24/7</p>
+                    <p class="text-gray-400 text-xs uppercase">Updated</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <!-- Filters Section -->
+            <section class="mb-10">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-black uppercase mb-2">Streetwear Drops</h2>
+                        <p class="text-gray-400">Fresh picks updated daily</p>
+                    </div>
+                    
+                    <div class="mt-4 md:mt-0">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-gray-400 text-sm hidden md:block">Sorted by:</span>
+                            <select id="sortSelect" class="bg-gray-900 border border-gray-700 text-white text-sm rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-white">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Controls -->
+                <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-4 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="font-bold uppercase text-sm text-gray-300 mb-2">Filter by:</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <!-- Category Filters -->
+                                <div class="filter-group">
+                                    <label class="text-xs text-gray-400 block mb-1">CATEGORY</label>
+                                    <div id="categoryFilters" class="flex flex-wrap gap-2">
+                                        <!-- Dynamic filters will be inserted here -->
+                                        <div class="skeleton-filter"></div>
+                                        <div class="skeleton-filter"></div>
+                                        <div class="skeleton-filter"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Outfit Type Filters -->
+                                <div class="filter-group">
+                                    <label class="text-xs text-gray-400 block mb-1">OUTFIT TYPE</label>
+                                    <div id="outfitFilters" class="flex flex-wrap gap-2">
+                                        <!-- Dynamic filters will be inserted here -->
+                                        <div class="skeleton-filter"></div>
+                                        <div class="skeleton-filter"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <button id="clearFilters" class="text-gray-400 hover:text-white text-sm uppercase flex items-center space-x-1 transition-colors">
+                                <i class="fas fa-times text-xs"></i>
+                                <span>Clear Filters</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Filters Display -->
+                <div id="activeFilters" class="flex flex-wrap gap-2 mb-6 hidden">
+                    <!-- Active filters will appear here -->
+                </div>
+            </section>
+
+            <!-- Products Grid -->
+            <section class="mb-12">
+                <!-- Loading State -->
+                <div id="loadingState" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Skeleton Loaders -->
+                    <div class="product-card skeleton">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-tag"></div>
+                    </div>
+                    <div class="product-card skeleton">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-tag"></div>
+                    </div>
+                    <div class="product-card skeleton">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-tag"></div>
+                    </div>
+                    <div class="product-card skeleton">
+                        <div class="skeleton-image"></div>
+                        <div class="skeleton-text"></div>
+                        <div class="skeleton-tag"></div>
+                    </div>
+                </div>
+
+                <!-- Products Grid (Will be populated by JavaScript) -->
+                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
+                    <!-- Product cards will be dynamically inserted here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden text-center py-16">
+                    <div class="text-6xl mb-4">👕</div>
+                    <h3 class="text-2xl font-bold mb-2">No Products Found</h3>
+                    <p class="text-gray-400 max-w-md mx-auto mb-6">Try adjusting your filters or check back later for new drops.</p>
+                    <button id="resetFiltersBtn" class="bg-white text-black px-6 py-3 rounded-lg font-bold uppercase text-sm hover:bg-gray-200 transition-colors">
+                        Reset All Filters
+                    </button>
+                </div>
+            </section>
+
+            <!-- Featured Banner -->
+            <section class="mb-12">
+                <div class="bg-gradient-to-r from-gray-900 to-black border border-gray-800 rounded-xl p-6 md:p-8">
+                    <div class="flex flex-col md:flex-row items-center justify-between">
+                        <div class="mb-6 md:mb-0 md:mr-8">
+                            <h3 class="text-2xl md:text-3xl font-black uppercase mb-2">Fresh Drops Daily</h3>
+                            <p class="text-gray-300 mb-4">Get notified when new streetwear items are added to our collection.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <input type="email" placeholder="Your email address" class="bg-gray-800 border border-gray-700 text-white rounded px-4 py-3 flex-grow focus:outline-none focus:ring-1 focus:ring-white">
+                                <button class="bg-white text-black px-6 py-3 rounded font-bold uppercase text-sm hover:bg-gray-200 transition-colors">Notify Me</button>
+                            </div>
+                        </div>
+                        <div class="text-6xl md:text-7xl">🛒</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 border-t border-gray-800 py-8">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-6 md:mb-0">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                                <span class="text-black font-black">U</span>
+                            </div>
+                            <h2 class="text-xl font-black uppercase">URBAN STREETWEAR</h2>
+                        </div>
+                        <p class="text-gray-400 text-sm max-w-md">Curated streetwear drops for the urban culture. We bring you the freshest items from top brands worldwide.</p>
+                    </div>
+                    
+                    <div class="text-center md:text-right">
+                        <p class="text-gray-400 text-sm mb-2">© 2023 URBAN STREETWEAR. All rights reserved.</p>
+                        <p class="text-gray-500 text-xs">This is an affiliate website. We may earn commission on purchases.</p>
+                    </div>
+                </div>
+                
+                <div class="mt-8 pt-8 border-t border-gray-800 text-center">
+                    <div class="flex justify-center space-x-6 mb-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-tiktok text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-youtube text-xl"></i></a>
+                    </div>
+                    <p class="text-gray-500 text-xs">3,066 items curated • 150+ brands • Updated 24/7</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+      <!-- JavaScript Files -->
+    <!-- Add Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="product-service.js"></script>
+    <script src="app.js"></script>
+    <script>
+        
+        // Tailwind Configuration
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
