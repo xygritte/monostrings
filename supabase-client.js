@@ -4,29 +4,34 @@
 const SUPABASE_URL = 'https://ifrouumcsnzdmushqcvk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlmcm91dW1jc256ZG11c2hxY3ZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNTQzMTAsImV4cCI6MjA4NTczMDMxMH0.BXzln9GUmhpRFLFrDS2n486brQBojxNkS52KwuwNmc4';
 
-// Initialize Supabase client
-let supabase;
+// Supabase client variable
+window.supabaseClient = null;
 
+// Initialize Supabase client
 try {
-    // Check if Supabase is available (loaded via CDN)
-    if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('[SUPABASE_CLIENT]: Initialized successfully');
+    // Check if Supabase CDN is loaded
+    if (typeof supabase !== 'undefined') {
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('[SUPABASE_CLIENT]: Initialized successfully with Supabase CDN');
     } else {
-        throw new Error('Supabase CDN not loaded');
+        console.warn('[SUPABASE_CLIENT]: Supabase CDN not loaded, using fallback');
+        window.supabaseClient = createMockSupabaseClient();
     }
 } catch (error) {
     console.error('[SUPABASE_CLIENT_ERROR]:', error.message);
+    window.supabaseClient = createMockSupabaseClient();
+}
+
+// Create mock Supabase client for fallback
+function createMockSupabaseClient() {
+    console.log('[SUPABASE_CLIENT]: Using mock client for demonstration');
     
-    // Fallback to mock client for GitHub Pages demo
-    supabase = {
+    return {
         from: function(table) {
             return {
                 select: function(columns = '*') {
                     return {
                         then: function(callback) {
-                            console.warn('[SUPABASE_CLIENT]: Using mock data. Supabase not available.');
-                            
                             setTimeout(() => {
                                 const mockData = getMockData();
                                 callback({ data: mockData, error: null });
@@ -35,11 +40,17 @@ try {
                             return {
                                 catch: function(errorCallback) {
                                     setTimeout(() => {
+                                        // 10% chance of simulated error for demo
                                         if (Math.random() < 0.1) {
                                             errorCallback(new Error('Simulated network error'));
                                         }
                                     }, 500);
-                                    return { then: function(cb) { cb(); return this; } };
+                                    return { 
+                                        then: function(cb) { 
+                                            setTimeout(() => cb(), 500); 
+                                            return this; 
+                                        } 
+                                    };
                                 }
                             };
                         }
@@ -50,7 +61,7 @@ try {
     };
 }
 
-// Mock data for fallback
+// Mock data for demo purposes
 function getMockData() {
     return [
         {
@@ -128,7 +139,7 @@ function getMockData() {
     ];
 }
 
-// Export for use in other files
+// Export for Node.js environment (if needed)
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { supabase };
+    module.exports = { supabaseClient: window.supabaseClient };
 }

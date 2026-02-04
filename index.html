@@ -7,8 +7,22 @@
     <meta name="description" content="Curated streetwear drops for the urban culture. Built for confidence.">
     
     <!-- Tailwind CSS -->
+    <!-- Tailwind CSS via CDN (Production) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <script>
+    tailwind.config = {
+        theme: {
+        extend: {
+            fontFamily: {
+            'sans': ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            },
+            animation: {
+            'pulse-slow': 'pulse 3s infinite',
+            }
+        }
+        }
+    }
+    </script>    
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     

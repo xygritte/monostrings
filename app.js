@@ -395,8 +395,3 @@ function generateDemoData(count = 20) {
     return demoProducts;
 }
 
-// For development/testing
-if (window.location.href.includes('localhost') || window.location.href.includes('127.0.0.1')) {
-    console.log('[APP]: Running in development mode');
-    window.ProductService = ProductService; // Expose for debugging
-}

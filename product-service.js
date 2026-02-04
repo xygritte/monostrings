@@ -11,12 +11,19 @@ const ProductService = {
     currentSort: 'newest',
     
     // Fetch all products from Supabase
+        // Fetch all products from Supabase
     async getProducts() {
         try {
             console.log('[PRODUCT_SERVICE]: Fetching all products from Supabase...');
             
+            // Check if supabaseClient is available
+            if (!window.supabaseClient || typeof window.supabaseClient.from !== 'function') {
+                console.warn('[PRODUCT_SERVICE]: Supabase client not available, using mock data');
+                return this.getMockData();
+            }
+            
             // Using the actual Supabase client
-            const { data, error } = await supabase
+            const { data, error } = await window.supabaseClient
                 .from('products')
                 .select('*');
             
@@ -32,7 +39,7 @@ const ProductService = {
             
             // Fallback to mock data for demo
             console.log('[PRODUCT_SERVICE]: Using fallback mock data');
-            return getMockData();
+            return this.getMockData();
         }
     },
     
