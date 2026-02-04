@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONOSTRINGS STREETWEAR | Curated Streetwear Drops</title>
+    <title>MONOSTRINGS | Curated Streetwear Drops</title>
     <meta name="description" content="Curated streetwear drops for the urban culture. Built for confidence.">
     
     <!-- Tailwind CSS -->
@@ -44,6 +44,9 @@
     <!-- Main Container -->
     <div class="min-h-screen flex flex-col relative z-10">
         <!-- Header -->
+        <!-- Update bagian header atau filter section dengan search bar -->
+
+        <!-- Cara 1: Tambahkan di Header (setelah brand) -->
         <header class="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-gray-800">
             <div class="container mx-auto px-4 py-4">
                 <div class="flex flex-col md:flex-row justify-between items-center">
@@ -53,25 +56,32 @@
                             <span class="text-black font-black text-xl">U</span>
                         </div>
                         <div>
-                            <h1 class="text-2xl md:text-3xl font-black tracking-tight uppercase">MONOSTRINGS STREETWEAR</h1>
+                            <h1 class="text-2xl md:text-3xl font-black tracking-tight uppercase">URBAN STREETWEAR</h1>
                             <p class="text-gray-400 text-sm">Curated Streetwear Drops</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Bar for Desktop -->
+                    <div class="hidden md:flex flex-1 max-w-md mx-8">
+                        <div class="relative w-full">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Search products..." 
+                                class="w-full bg-gray-900 border border-gray-700 text-white rounded-full px-6 py-3 pl-12 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-300"
+                            >
+                            <div class="absolute left-4 top-3.5 text-gray-400">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <button id="clearSearch" class="absolute right-4 top-3.5 text-gray-400 hover:text-white hidden">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
                     
                     <!-- Stats -->
                     <div class="hidden md:flex items-center space-x-6 text-sm">
-                        <div class="text-center">
-                            <p class="text-2xl font-black text-white">3,066</p>
-                            <p class="text-gray-400 text-xs uppercase">Items Curated</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-2xl font-black text-white">150+</p>
-                            <p class="text-gray-400 text-xs uppercase">Brands</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-2xl font-black text-white">24/7</p>
-                            <p class="text-gray-400 text-xs uppercase">Updated</p>
-                        </div>
+                        <!-- ... existing stats ... -->
                     </div>
                     
                     <!-- Mobile Menu Button -->
@@ -83,6 +93,24 @@
                 <!-- Tagline -->
                 <div class="mt-4 text-center md:text-left">
                     <p class="text-gray-300 italic">"Built for Confidence. Designed for the Streets."</p>
+                </div>
+                
+                <!-- Search Bar for Mobile -->
+                <div class="mt-4 md:hidden">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInputMobile" 
+                            placeholder="Search products..." 
+                            class="w-full bg-gray-900 border border-gray-700 text-white rounded-full px-6 py-3 pl-12 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all duration-300"
+                        >
+                        <div class="absolute left-4 top-3.5 text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <button id="clearSearchMobile" class="absolute right-4 top-3.5 text-gray-400 hover:text-white hidden">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -173,32 +201,21 @@
             <!-- Products Grid -->
             <section class="mb-12">
                 <!-- Loading State -->
-                <div id="loadingState" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <!-- Skeleton Loaders -->
+                <div id="loadingState" class="products-grid">
+                    <!-- Skeleton Loaders - 8 cards for better layout preview -->
+                    ${Array(8).fill().map((_, i) => `
                     <div class="product-card skeleton">
                         <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-tag"></div>
+                        <div class="product-info">
+                            <div class="skeleton-text"></div>
+                            <div class="skeleton-tag"></div>
+                        </div>
                     </div>
-                    <div class="product-card skeleton">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-tag"></div>
-                    </div>
-                    <div class="product-card skeleton">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-tag"></div>
-                    </div>
-                    <div class="product-card skeleton">
-                        <div class="skeleton-image"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-tag"></div>
-                    </div>
+                    `).join('')}
                 </div>
 
                 <!-- Products Grid (Will be populated by JavaScript) -->
-                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
+                <div id="productsGrid" class="products-grid hidden">
                     <!-- Product cards will be dynamically inserted here -->
                 </div>
 

@@ -1,29 +1,53 @@
-// Product Service for fetching and filtering products
+/**
+ * Product Service
+ * Handles all product data operations with error handling
+ */
 
 const ProductService = {
-    // Current filters state
-    currentFilters: {
-        category: null,
-        outfit_type: null
+    // Application state
+    state: {
+        products: [],
+        filteredProducts: [],
+        categories: [],
+        outfitTypes: [],
+        filters: {
+            category: null,
+            outfit_type: null,
+            search: ''
+        },
+        sort: 'newest',
+        isLoading: false
     },
-    
-    // Current sorting state
-    currentSort: 'newest',
-    
-    // Fetch all products from Supabase
-        // Fetch all products from Supabase
-    async getProducts() {
+
+    // Initialize the service
+    async initialize() {
         try {
-            console.log('[PRODUCT_SERVICE]: Fetching all products from Supabase...');
+            console.log('[PRODUCT_SERVICE]: Initializing...');
+            this.state.isLoading = true;
             
-            // Check if supabaseClient is available
-            if (!window.supabaseClient || typeof window.supabaseClient.from !== 'function') {
-                console.warn('[PRODUCT_SERVICE]: Supabase client not available, using mock data');
-                return this.getMockData();
-            }
+            // Fetch products from Supabase
+            await this.fetchProducts();
             
-            // Using the actual Supabase client
-            const { data, error } = await window.supabaseClient
+            // Extract unique categories and outfit types
+            this.extractFilterOptions();
+            
+            console.log('[PRODUCT_SERVICE]: Ready. Products:', this.state.products.length);
+            return true;
+        } catch (error) {
+            console.error('[PRODUCT_SERVICE_ERROR]: Initialization failed:', error);
+            return false;
+        } finally {
+            this.state.isLoading = false;
+        }
+    },
+
+    // Fetch products from Supabase
+    async fetchProducts() {
+        try {
+            console.log('[PRODUCT_SERVICE]: Fetching products...');
+            
+            // Use the Supabase client
+            const { data, error } = await supabaseClient
                 .from('products')
                 .select('*');
             
@@ -31,280 +55,285 @@ const ProductService = {
                 throw new Error(`Supabase error: ${error.message}`);
             }
             
-            console.log(`[PRODUCT_SERVICE]: Successfully fetched ${data?.length || 0} products`);
-            return data || [];
+            // Store products
+            this.state.products = data || [];
+            this.state.filteredProducts = [...this.state.products];
             
+            console.log(`[PRODUCT_SERVICE]: Fetched ${this.state.products.length} products`);
+            return this.state.products;
         } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]:', error.message);
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to fetch products:', error.message);
             
-            // Fallback to mock data for demo
-            console.log('[PRODUCT_SERVICE]: Using fallback mock data');
-            return this.getMockData();
+            // Fallback to mock data
+            console.log('[PRODUCT_SERVICE]: Using mock data as fallback');
+            this.state.products = getMockProducts();
+            this.state.filteredProducts = [...this.state.products];
+            
+            return this.state.products;
         }
     },
-    
-    // Insert a new product (for admin panel - optional)
-    async addProduct(productData) {
+
+    // Extract unique categories and outfit types for filters
+    extractFilterOptions() {
         try {
-            console.log('[PRODUCT_SERVICE]: Adding new product...');
-            
-            const { data, error } = await supabase
-                .from('products')
-                .insert([productData])
-                .select();
-            
-            if (error) {
-                throw new Error(`Failed to add product: ${error.message}`);
-            }
-            
-            console.log('[PRODUCT_SERVICE]: Product added successfully');
-            return data;
-            
-        } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to add product:', error.message);
-            throw error;
-        }
-    },
-    
-    // Get unique categories from products
-    getUniqueCategories(products) {
-        try {
-            if (!products || products.length === 0) return [];
-            
-            const categories = [...new Set(products
+            // Get unique categories
+            const categories = [...new Set(this.state.products
                 .map(product => product.category)
-                .filter(category => category && category.trim() !== '')
-            )];
+                .filter(Boolean)
+                .sort())];
             
-            console.log(`[PRODUCT_SERVICE]: Found ${categories.length} unique categories`);
-            return categories;
-        } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to get unique categories:', error.message);
-            return ['baju', 'celana', 'topi']; // Default fallback
-        }
-    },
-    
-    // Get unique outfit types from products
-    getUniqueOutfitTypes(products) {
-        try {
-            if (!products || products.length === 0) return [];
-            
-            const outfitTypes = [...new Set(products
+            // Get unique outfit types
+            const outfitTypes = [...new Set(this.state.products
                 .map(product => product.outfit_type)
-                .filter(outfit => outfit && outfit.trim() !== '')
-            )];
+                .filter(Boolean)
+                .sort())];
             
-            console.log(`[PRODUCT_SERVICE]: Found ${outfitTypes.length} unique outfit types`);
-            return outfitTypes;
+            this.state.categories = categories;
+            this.state.outfitTypes = outfitTypes;
+            
+            console.log(`[PRODUCT_SERVICE]: Extracted ${categories.length} categories, ${outfitTypes.length} outfit types`);
         } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to get unique outfit types:', error.message);
-            return ['streetwear', 'casual', 'sporty', 'vintage']; // Default fallback
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to extract filter options:', error);
+            this.state.categories = ['baju', 'celana', 'topi'];
+            this.state.outfitTypes = ['streetwear', 'casual', 'sporty', 'vintage'];
         }
     },
-    
-    // Filter products based on current filters
-    filterProducts(products, filters = null) {
+
+    // Apply filters and search
+    applyFilters() {
         try {
-            if (!products || products.length === 0) return [];
-            
-            const activeFilters = filters || this.currentFilters;
-            let filteredProducts = [...products];
+            let results = [...this.state.products];
+            const { category, outfit_type, search } = this.state.filters;
             
             // Apply category filter
-            if (activeFilters.category) {
-                filteredProducts = filteredProducts.filter(
-                    product => product.category === activeFilters.category
+            if (category) {
+                results = results.filter(product => 
+                    product.category.toLowerCase() === category.toLowerCase()
                 );
             }
             
             // Apply outfit type filter
-            if (activeFilters.outfit_type) {
-                filteredProducts = filteredProducts.filter(
-                    product => product.outfit_type === activeFilters.outfit_type
+            if (outfit_type) {
+                results = results.filter(product => 
+                    product.outfit_type.toLowerCase() === outfit_type.toLowerCase()
                 );
             }
             
-            console.log(`[PRODUCT_SERVICE]: Filtered ${products.length} products to ${filteredProducts.length} products`);
-            return filteredProducts;
-            
-        } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to filter products:', error.message);
-            return products || []; // Return original as fallback
-        }
-    },
-    
-    // Sort products based on current sort
-    sortProducts(products, sortType = null) {
-        try {
-            if (!products || products.length === 0) return [];
-            
-            const sort = sortType || this.currentSort;
-            let sortedProducts = [...products];
-            
-            switch (sort) {
-                case 'newest':
-                    sortedProducts.sort((a, b) => {
-                        const dateA = new Date(a.created_at || 0);
-                        const dateB = new Date(b.created_at || 0);
-                        return dateB - dateA;
-                    });
-                    break;
-                case 'oldest':
-                    sortedProducts.sort((a, b) => {
-                        const dateA = new Date(a.created_at || 0);
-                        const dateB = new Date(b.created_at || 0);
-                        return dateA - dateB;
-                    });
-                    break;
-                default:
-                    // Default to newest
-                    sortedProducts.sort((a, b) => {
-                        const dateA = new Date(a.created_at || 0);
-                        const dateB = new Date(b.created_at || 0);
-                        return dateB - dateA;
-                    });
+            // Apply search filter
+            if (search && search.trim() !== '') {
+                const searchTerm = search.toLowerCase().trim();
+                results = results.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm) ||
+                    product.category.toLowerCase().includes(searchTerm) ||
+                    product.outfit_type.toLowerCase().includes(searchTerm)
+                );
             }
             
-            console.log(`[PRODUCT_SERVICE]: Sorted ${sortedProducts.length} products by ${sort}`);
-            return sortedProducts;
+            // Apply sorting
+            results = this.applySorting(results);
             
+            // Update filtered products
+            this.state.filteredProducts = results;
+            
+            console.log(`[PRODUCT_SERVICE]: Filtered to ${results.length} products`);
+            return results;
         } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to sort products:', error.message);
-            return products || [];
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to apply filters:', error);
+            this.state.filteredProducts = [...this.state.products];
+            return this.state.filteredProducts;
         }
     },
-    
-    // Apply both filter and sort
-    getFilteredAndSortedProducts(products) {
+
+    // Apply sorting to products
+    applySorting(products) {
         try {
-            const filtered = this.filterProducts(products);
-            const sorted = this.sortProducts(filtered);
+            const sorted = [...products];
+            
+            switch (this.state.sort) {
+                case 'newest':
+                    sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    break;
+                case 'oldest':
+                    sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                    break;
+                case 'name_asc':
+                    sorted.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'name_desc':
+                    sorted.sort((a, b) => b.name.localeCompare(a.name));
+                    break;
+                default:
+                    sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            }
+            
             return sorted;
         } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to filter and sort products:', error.message);
-            return products || [];
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to sort products:', error);
+            return products;
         }
     },
-    
-    // Update filters
-    updateFilters(newFilters) {
+
+    // Set category filter
+    setCategoryFilter(category) {
         try {
-            this.currentFilters = { ...this.currentFilters, ...newFilters };
-            console.log('[PRODUCT_SERVICE]: Updated filters:', this.currentFilters);
-            return this.currentFilters;
+            // Toggle filter: if same category is selected, remove it
+            this.state.filters.category = 
+                this.state.filters.category === category ? null : category;
+            
+            console.log('[PRODUCT_SERVICE]: Category filter:', this.state.filters.category);
+            return this.applyFilters();
         } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to update filters:', error.message);
-            return this.currentFilters;
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to set category filter:', error);
+            return this.state.filteredProducts;
         }
     },
-    
+
+    // Set outfit type filter
+    setOutfitFilter(outfitType) {
+        try {
+            // Toggle filter: if same outfit type is selected, remove it
+            this.state.filters.outfit_type = 
+                this.state.filters.outfit_type === outfitType ? null : outfitType;
+            
+            console.log('[PRODUCT_SERVICE]: Outfit filter:', this.state.filters.outfit_type);
+            return this.applyFilters();
+        } catch (error) {
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to set outfit filter:', error);
+            return this.state.filteredProducts;
+        }
+    },
+
+    // Set search filter
+    setSearchFilter(searchTerm) {
+        try {
+            this.state.filters.search = searchTerm || '';
+            console.log('[PRODUCT_SERVICE]: Search filter:', this.state.filters.search);
+            return this.applyFilters();
+        } catch (error) {
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to set search filter:', error);
+            return this.state.filteredProducts;
+        }
+    },
+
+    // Set sort order
+    setSortOrder(sortType) {
+        try {
+            this.state.sort = sortType || 'newest';
+            console.log('[PRODUCT_SERVICE]: Sort order:', this.state.sort);
+            return this.applyFilters();
+        } catch (error) {
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to set sort order:', error);
+            return this.state.filteredProducts;
+        }
+    },
+
     // Clear all filters
-    clearFilters() {
+    clearAllFilters() {
         try {
-            this.currentFilters = {
+            this.state.filters = {
                 category: null,
-                outfit_type: null
+                outfit_type: null,
+                search: ''
             };
+            
             console.log('[PRODUCT_SERVICE]: Cleared all filters');
-            return this.currentFilters;
+            return this.applyFilters();
         } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to clear filters:', error.message);
-            return this.currentFilters;
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to clear filters:', error);
+            return this.state.filteredProducts;
         }
     },
-    
-    // Update sort
-    updateSort(newSort) {
+
+    // Clear search only
+    clearSearch() {
         try {
-            this.currentSort = newSort;
-            console.log('[PRODUCT_SERVICE]: Updated sort to:', newSort);
-            return this.currentSort;
+            this.state.filters.search = '';
+            console.log('[PRODUCT_SERVICE]: Cleared search');
+            return this.applyFilters();
         } catch (error) {
-            console.error('[PRODUCT_SERVICE_ERROR]: Failed to update sort:', error.message);
-            return this.currentSort;
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to clear search:', error);
+            return this.state.filteredProducts;
         }
+    },
+
+    // Get active filters count
+    getActiveFiltersCount() {
+        let count = 0;
+        if (this.state.filters.category) count++;
+        if (this.state.filters.outfit_type) count++;
+        if (this.state.filters.search.trim() !== '') count++;
+        return count;
+    },
+
+    // Get search suggestions
+    getSearchSuggestions(searchTerm, limit = 5) {
+        try {
+            if (!searchTerm || searchTerm.trim() === '') {
+                return [];
+            }
+            
+            const term = searchTerm.toLowerCase().trim();
+            const suggestions = [];
+            
+            // Search in product names
+            this.state.products.forEach(product => {
+                if (product.name.toLowerCase().includes(term)) {
+                    suggestions.push({
+                        type: 'product',
+                        value: product.name,
+                        category: product.category
+                    });
+                }
+            });
+            
+            // Search in categories
+            this.state.categories.forEach(category => {
+                if (category.toLowerCase().includes(term)) {
+                    suggestions.push({
+                        type: 'category',
+                        value: category,
+                        category: 'Category'
+                    });
+                }
+            });
+            
+            // Search in outfit types
+            this.state.outfitTypes.forEach(outfitType => {
+                if (outfitType.toLowerCase().includes(term)) {
+                    suggestions.push({
+                        type: 'outfit',
+                        value: outfitType,
+                        category: 'Outfit Type'
+                    });
+                }
+            });
+            
+            // Remove duplicates and limit results
+            const uniqueSuggestions = suggestions
+                .filter((suggestion, index, self) =>
+                    index === self.findIndex(s => s.value === suggestion.value)
+                )
+                .slice(0, limit);
+            
+            return uniqueSuggestions;
+        } catch (error) {
+            console.error('[PRODUCT_SERVICE_ERROR]: Failed to get search suggestions:', error);
+            return [];
+        }
+    },
+
+    // Get current state (for debugging)
+    getState() {
+        return {
+            totalProducts: this.state.products.length,
+            filteredProducts: this.state.filteredProducts.length,
+            activeFilters: this.getActiveFiltersCount(),
+            filters: this.state.filters,
+            sort: this.state.sort
+        };
     }
 };
 
-// Mock data function for fallback
-function getMockData() {
-    return [
-        {
-            id: '1',
-            name: 'Oversized Black Hoodie',
-            image_url: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80',
-            affiliate_link: 'https://example.com/product1',
-            category: 'baju',
-            outfit_type: 'streetwear',
-            created_at: '2023-10-15T10:30:00Z'
-        },
-        {
-            id: '2',
-            name: 'Cargo Jogger Pants',
-            image_url: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=688&q=80',
-            affiliate_link: 'https://example.com/product2',
-            category: 'celana',
-            outfit_type: 'casual',
-            created_at: '2023-10-14T14:20:00Z'
-        },
-        {
-            id: '3',
-            name: 'Vintage Denim Jacket',
-            image_url: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80',
-            affiliate_link: 'https://example.com/product3',
-            category: 'baju',
-            outfit_type: 'vintage',
-            created_at: '2023-10-13T09:15:00Z'
-        },
-        {
-            id: '4',
-            name: 'Baseball Cap - Black',
-            image_url: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80',
-            affiliate_link: 'https://example.com/product4',
-            category: 'topi',
-            outfit_type: 'sporty',
-            created_at: '2023-10-12T16:45:00Z'
-        },
-        {
-            id: '5',
-            name: 'Graphic Tee - Abstract',
-            image_url: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80',
-            affiliate_link: 'https://example.com/product5',
-            category: 'baju',
-            outfit_type: 'streetwear',
-            created_at: '2023-10-11T11:20:00Z'
-        },
-        {
-            id: '6',
-            name: 'Tech Fleece Joggers',
-            image_url: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80',
-            affiliate_link: 'https://example.com/product6',
-            category: 'celana',
-            outfit_type: 'sporty',
-            created_at: '2023-10-10T13:10:00Z'
-        },
-        {
-            id: '7',
-            name: 'Bucket Hat - Camo',
-            image_url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=736&q=80',
-            affiliate_link: 'https://example.com/product7',
-            category: 'topi',
-            outfit_type: 'streetwear',
-            created_at: '2023-10-09T08:30:00Z'
-        },
-        {
-            id: '8',
-            name: 'Oversized T-Shirt - White',
-            image_url: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80',
-            affiliate_link: 'https://example.com/product8',
-            category: 'baju',
-            outfit_type: 'casual',
-            created_at: '2023-10-08T15:40:00Z'
-        }
-    ];
-}
-
-// Export for use in other files
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ProductService };
-}
+// Export for browser use
+window.ProductService = ProductService;
+console.log('[PRODUCT_SERVICE]: Ready');
